@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Profile Setup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-color-start: #0f0c29; --bg-color-end: #000000; --accent-color-1: #4f46e5; --accent-color-2: #d946ef; --text-color: #e6edf3; --card-bg: rgba(1, 2, 17, 0.8); --border-color: rgba(79, 70, 229, 0.4); }
+        body { font-family: 'Inter', sans-serif; color: var(--text-color); }
+        .nebula-background { position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -1; background: linear-gradient(45deg, var(--bg-color-start), var(--bg-color-end)); animation: gradient-pan 20s ease infinite; }
+        @keyframes gradient-pan { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .glass-card { background: var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid var(--border-color); }
+        .btn-primary { background-image: linear-gradient(to right, var(--accent-color-1) 0%, var(--accent-color-2) 51%, var(--accent-color-1) 100%); background-size: 200% auto; color: white; transition: all 0.5s; }
+        .btn-primary:hover:not(:disabled) { background-position: right center; transform: translateY(-2px); box-shadow: 0 10px 30px rgba(217, 70, 239, 0.6); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .title-gradient { background: linear-gradient(45deg, #a5b4fc, #f472b6, #67e8f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .form-step { display: none; animation: fadeIn 0.6s ease-out; }
+        .form-step.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .gender-card { border: 2px solid var(--border-color); transition: all 0.3s ease; }
+        .gender-card.selected { border-color: #d946ef; background-color: rgba(217, 70, 239, 0.2); transform: scale(1.05); }
+    </style>
+</head>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen">
+    <div class="nebula-background"></div>
+    <main class="w-full max-w-2xl mx-auto p-4">
+        <div class="glass-card p-8 md:p-12">
+            <h1 class="text-4xl font-extrabold title-gradient tracking-tight text-center mb-2">Create Your Health Profile</h1>
+            <p class="text-center text-gray-400 mb-8">This helps our AI provide a more personalized analysis.</p>
+
+            <form id="onboarding-form">
+                <div class="form-step active" data-step="1">
+                    <div class="mb-8">
+                        <label class="block text-xl font-medium text-gray-300 mb-4 text-center">Select Your Gender</label>
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="gender-card p-6 rounded-lg text-center cursor-pointer" data-gender="Male"><span class="text-5xl">♂️</span><p class="mt-2 font-semibold text-lg">Male</p></div>
+                            <div class="gender-card p-6 rounded-lg text-center cursor-pointer" data-gender="Female"><span class="text-5xl">♀️</span><p class="mt-2 font-semibold text-lg">Female</p></div>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="age" class="block text-xl font-medium text-gray-300 mb-3 text-center">Your Age</label>
+                        <input type="number" id="age" name="age" class="w-full p-3 text-center text-xl rounded-lg bg-black/50 border-2 border-gray-700 focus:border-pink-500 focus:ring-0" placeholder="e.g., 35" required min="1">
+                    </div>
+                </div>
+
+                <div class="form-step" data-step="2">
+                    <h2 class="text-2xl font-bold text-center mb-6">Biometrics</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="height" class="block text-lg font-medium text-gray-300 mb-2">Height (cm)</label>
+                            <input type="number" id="height" name="height" class="w-full p-3 rounded-lg bg-black/50 border-2 border-gray-700 focus:border-pink-500 focus:ring-0" placeholder="e.g., 175" required min="1">
+                        </div>
+                        <div>
+                            <label for="weight" class="block text-lg font-medium text-gray-300 mb-2">Weight (kg)</label>
+                            <input type="number" id="weight" name="weight" class="w-full p-3 rounded-lg bg-black/50 border-2 border-gray-700 focus:border-pink-500 focus:ring-0" placeholder="e.g., 70" required min="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-step" data-step="3">
+                    <h2 class="text-2xl font-bold text-center mb-6">Medical History</h2>
+                    <label for="diseases" class="block text-lg font-medium text-gray-300 mb-2">Any chronic diseases? (optional)</label>
+                    <div id="disease-selector" class="relative">
+                        <input type="text" id="disease-input" class="w-full p-3 rounded-lg bg-black/50 border-2 border-gray-700 focus:border-pink-500 focus:ring-0" placeholder="Type to search or add new...">
+                        <div id="disease-dropdown" class="absolute hidden w-full bg-gray-800 border border-gray-700 rounded-lg mt-1 max-h-48 overflow-y-auto z-10"></div>
+                        <div id="selected-diseases" class="mt-4 flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+
+                <div class="form-step" data-step="4">
+                    <h2 class="text-3xl font-bold text-center mb-4">Your BMI Analysis</h2>
+                    <div class="w-full h-64 mx-auto mb-4"><canvas id="bmi-chart"></canvas></div>
+                    <p id="bmi-status" class="text-2xl font-bold text-center"></p>
+                </div>
+
+                <div class="mt-10 flex justify-between items-center">
+                    <button type="button" id="prev-btn" class="text-gray-400 hover:text-white transition">Back</button>
+                    <button type="button" id="next-btn" class="btn-primary font-bold py-2 px-8 rounded-full">Next</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('onboarding-form');
+        const steps = Array.from(form.querySelectorAll('.form-step'));
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        let currentStep = 1;
+        const totalSteps = steps.length;
+        let bmiChart;
+        const formData = { gender: null, age: null, height: null, weight: null, diseases: [] };
+        const diseaseList = ['Diabetes', 'Hypertension', 'Asthma', 'Arthritis', 'Heart Disease', 'Kidney Disease', 'Depression', 'Anxiety'];
+
+        const updateButtons = () => {
+            prevBtn.style.display = currentStep === 1 ? 'none' : 'block';
+            nextBtn.textContent = currentStep === totalSteps ? 'Finish Setup' : 'Next';
+        };
+        const showStep = (stepNumber) => {
+            steps.forEach(step => step.classList.toggle('active', parseInt(step.dataset.step) === stepNumber));
+            updateButtons();
+        };
+        const validateStep = (stepNumber) => {
+            if (stepNumber === 1) { const age = document.getElementById('age').value; return formData.gender && age > 0; }
+            if (stepNumber === 2) { const height = document.getElementById('height').value; const weight = document.getElementById('weight').value; return height > 0 && weight > 0; }
+            return true;
+        };
+
+        nextBtn.addEventListener('click', async () => {
+            if (!validateStep(currentStep)) {
+                alert('Please fill in all required fields for this step.');
+                return;
+            }
+            if (currentStep < totalSteps) {
+                currentStep++;
+                showStep(currentStep);
+                if (currentStep === totalSteps) {
+                    calculateAndShowBMI();
+                }
+            } else {
+                nextBtn.disabled = true;
+                nextBtn.textContent = 'Saving...';
+                try {
+                    const response = await fetch('/api/onboarding', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+                    if (response.ok) {
+                        // THIS IS THE CORRECTED LINE:
+                        window.location.href = '/landing'; 
+                    } else {
+                        const err = await response.json();
+                        alert('Error saving data: ' + err.message);
+                    }
+                } catch (error) {
+                    alert('An error occurred. Please try again.');
+                } finally {
+                    nextBtn.disabled = false;
+                    nextBtn.textContent = 'Finish Setup';
+                }
+            }
+        });
+        prevBtn.addEventListener('click', () => { if (currentStep > 1) { currentStep--; showStep(currentStep); } });
+        form.querySelectorAll('.gender-card').forEach(card => card.addEventListener('click', () => {
+            form.querySelectorAll('.gender-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            formData.gender = card.dataset.gender;
+        }));
+        form.addEventListener('input', e => { if (e.target.name) formData[e.target.name] = e.target.value; });
+        const diseaseInput = document.getElementById('disease-input'), diseaseDropdown = document.getElementById('disease-dropdown'), selectedContainer = document.getElementById('selected-diseases');
+        const renderSelectedDiseases = () => {
+            selectedContainer.innerHTML = '';
+            formData.diseases.forEach(disease => {
+                const tag = document.createElement('div');
+                tag.className = 'bg-indigo-600 text-white text-sm font-medium px-3 py-1 rounded-full flex items-center';
+                tag.textContent = disease;
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'ml-2 text-indigo-200 hover:text-white';
+                removeBtn.innerHTML = '&times;';
+                removeBtn.onclick = () => { formData.diseases = formData.diseases.filter(d => d !== disease); renderSelectedDiseases(); };
+                tag.appendChild(removeBtn);
+                selectedContainer.appendChild(tag);
+            });
+        };
+        const addDisease = (disease) => {
+            if (disease && !formData.diseases.includes(disease)) {
+                formData.diseases.push(disease);
+                renderSelectedDiseases();
+            }
+            diseaseInput.value = '';
+            diseaseDropdown.classList.add('hidden');
+        };
+        diseaseInput.addEventListener('input', () => {
+            const query = diseaseInput.value.toLowerCase();
+            if (!query) { diseaseDropdown.classList.add('hidden'); return; }
+            const filtered = diseaseList.filter(d => d.toLowerCase().includes(query) && !formData.diseases.includes(d));
+            diseaseDropdown.innerHTML = '';
+            filtered.forEach(d => {
+                const item = document.createElement('div');
+                item.className = 'p-2 cursor-pointer hover:bg-gray-700';
+                item.textContent = d;
+                item.onclick = () => addDisease(d);
+                diseaseDropdown.appendChild(item);
+            });
+            diseaseDropdown.classList.toggle('hidden', filtered.length === 0);
+        });
+        diseaseInput.addEventListener('keydown', e => { if (e.key === 'Enter' && diseaseInput.value) { e.preventDefault(); addDisease(diseaseInput.value); } });
+        const calculateAndShowBMI = () => {
+            const heightM = formData.height / 100;
+            const bmi = (formData.weight / (heightM * heightM)).toFixed(1);
+            formData.bmi = parseFloat(bmi);
+            let status, color;
+            if (bmi < 18.5) { status = 'Underweight'; color = '#3b82f6'; } else if (bmi <= 24.9) { status = 'Healthy Weight'; color = '#22c55e'; } else if (bmi <= 29.9) { status = 'Overweight'; color = '#f59e0b'; } else { status = 'Obese'; color = '#ef4444'; }
+            document.getElementById('bmi-status').textContent = `${status} (BMI: ${bmi})`;
+            document.getElementById('bmi-status').style.color = color;
+            const ctx = document.getElementById('bmi-chart').getContext('2d');
+            if (bmiChart) bmiChart.destroy();
+            bmiChart = new Chart(ctx, { type: 'doughnut', data: { datasets: [{ data: [18.5, 6.4, 5, 10], backgroundColor: ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444'], borderWidth: 0 }] }, options: { rotation: -90, circumference: 180, cutout: '70%', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }, plugins: [{ id: 'bmi-needle', afterDraw: chart => { const { ctx, width, height } = chart; ctx.save(); const needleValue = Math.min(Math.max(bmi, 10), 40); const angle = Math.PI + (1 / 30) * (needleValue - 10) * Math.PI; const cx = width / 2; const cy = height; ctx.translate(cx, cy); ctx.rotate(angle); ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(height - 20, 0); ctx.lineTo(0, 5); ctx.fillStyle = '#e5e7eb'; ctx.fill(); ctx.rotate(-angle); ctx.translate(-cx, -cy); ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2); ctx.fill(); ctx.restore(); } }] });
+        };
+        showStep(currentStep);
+    });
+</script>
+</body>
+</html>

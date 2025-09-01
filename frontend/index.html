@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Health Therapist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color-start: #0f0c29; --bg-color-end: #000000; --accent-color-1: #4f46e5; --accent-color-2: #d946ef; --text-color: #e6edf3; --card-bg: rgba(1, 2, 17, 0.6); --border-color: rgba(79, 70, 229, 0.4);
+        }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; color: var(--text-color); background-color: var(--bg-color-end); }
+        .nebula-background { position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -1; background: linear-gradient(45deg, var(--bg-color-start), var(--bg-color-end)); background-size: 200% 200%; animation: gradient-pan 20s ease infinite; transition: background 1.5s ease-in-out; }
+        @keyframes gradient-pan { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .glass-card { background: var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid var(--border-color); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); }
+        .btn-primary { background-image: linear-gradient(to right, var(--accent-color-1) 0%, var(--accent-color-2) 51%, var(--accent-color-1) 100%); background-size: 200% auto; color: white; transition: all 0.5s; }
+        .btn-primary:hover { background-position: right center; transform: translateY(-2px); }
+        .title-gradient { background: linear-gradient(45deg, #a5b4fc, #f472b6, #67e8f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .stagger-in { opacity: 0; animation: fadeIn 0.8s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        #body-map-container { position: relative; width: 100%; max-width: 400px; margin: 0 auto; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        #body-map-image { width: 100%; height: auto; display: block; filter: brightness(0.9) saturate(1.2); object-fit: contain; max-height: 600px; } 
+        .symptom-marker { position: absolute; width: 25px; height: 25px; background: radial-gradient(circle at center, #f472b6 0%, #ec4899 50%, transparent 70%); border-radius: 50%; opacity: 0.9; transform: translate(-50%, -50%); animation: marker-pulse 1.8s infinite ease-in-out; box-shadow: 0 0 20px #f472b6, 0 0 8px #f472b6 inset; z-index: 10; cursor: pointer; }
+        .symptom-label { position: absolute; background: linear-gradient(45deg, rgba(1, 2, 17, 0.9), rgba(10, 5, 20, 0.95)); backdrop-filter: blur(10px); color: var(--text-color); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(244, 114, 182, 0.7); font-size: 14px; font-weight: 500; white-space: nowrap; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease; z-index: 11; pointer-events: none; transform: translateY(10px); }
+        .symptom-marker:hover + .symptom-label, .symptom-label.active { opacity: 1; visibility: visible; transform: translateY(0); animation: label-glow 2s infinite alternate; }
+        @keyframes label-glow { from { box-shadow: 0 0 5px rgba(244, 114, 182, 0.4); } to { box-shadow: 0 0 15px rgba(244, 114, 182, 0.8); } }
+        .label-line-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9; }
+        .label-line { stroke: #d946ef; stroke-width: 2.5; fill: none; stroke-dasharray: 8 4; animation: drawLine 2s linear forwards infinite; filter: drop-shadow(0 0 3px #d946ef); }
+        @keyframes marker-pulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; } 50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; } }
+        @keyframes drawLine { from { stroke-dashoffset: 12; } to { stroke-dashoffset: 0; } }
+    </style>
+</head>
+<body>
+    <div class="nebula-background"></div>
+    <div class="min-h-screen p-4 sm:p-6 lg:p-8 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <header class="text-center mb-12 relative">
+                <a href="/auth/logout" class="absolute top-0 right-0 btn-primary text-sm font-bold py-2 px-6 rounded-full">Logout</a>
+                <h1 class="text-5xl md:text-7xl font-extrabold title-gradient tracking-tight">AI Health Therapist</h1>
+                <p class="mt-4 text-lg text-gray-400 max-w-2xl mx-auto">A new paradigm in personal health analysis. Describe your concerns to receive an instant, AI-driven bio-assessment.</p>
+            </header>
+            <div class="glass-card p-6 md:p-8 mb-8">
+                <form id="health-form">
+                    <label for="problem-input" class="block text-xl font-medium text-gray-300 mb-3">Input Health Query</label>
+                    <textarea id="problem-input" rows="5" class="w-full p-4 rounded-lg bg-black/50 border-2 border-gray-700 focus:border-pink-500 focus:ring-0" placeholder="e.g., 'For the last few days, I've had a dull ache in my chest and feel short of breath...'"></textarea>
+                    <div class="mt-6 text-center"><button type="submit" class="btn-primary font-bold py-3 px-12 rounded-full text-xl">Initiate Analysis</button></div>
+                </form>
+            </div>
+            <div id="loader" class="hidden flex justify-center items-center my-16 flex-col"><div class="w-16 h-16 border-4 border-t-4 border-gray-800 border-t-pink-500 rounded-full animate-spin"></div><p class="text-gray-400 text-lg mt-4">Analyzing Biometrics...</p></div>
+            <div id="error-message" class="hidden"></div>
+            
+            <div id="results" class="hidden"></div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+       // const apiKey = "AIzaSyDUPNeeGD470D6weVciY4KvfYWgSpNFS9g"; 
+        const form = document.getElementById('health-form'), problemInput = document.getElementById('problem-input'), loader = document.getElementById('loader'), resultsSection = document.getElementById('results'), errorMessageContainer = document.getElementById('error-message');
+        let overallHealthChart, mentalPhysicalChart, healthTrendsChart;
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const problem = problemInput.value.trim();
+            if (!problem) { showError('Please describe your health problem.'); return; }
+            resultsSection.classList.add('hidden');
+            errorMessageContainer.classList.add('hidden');
+            loader.classList.remove('hidden');
+            try {
+                const aiResponse = await callGeminiAPI(problem);
+                updateUI(aiResponse);
+                resultsSection.classList.remove('hidden');
+                document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message || 'Failed to get analysis. Please try again.');
+            } finally {
+                loader.classList.add('hidden');
+            }
+        });
+
+        // Replace this function in index.html
+async function callGeminiAPI(problem) {
+    const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ problem: problem })
+    });
+
+    if (!response.ok) {
+        const errorResult = await response.json();
+        throw new Error(errorResult.message || `API Error: ${response.status}`);
+    }
+
+    return await response.json(); // The backend now returns the parsed JSON directly
+}
+
+        function updateUI(data) {
+            updateDynamicColors(data.mentalHealthScore, data.physicalHealthScore);
+            const seriousnessClasses = { 'Low': 'bg-green-900/50 text-green-300', 'Medium': 'bg-yellow-900/50 text-yellow-300', 'High': 'bg-red-900/50 text-red-300' };
+            const remedyIcons = {
+                'Home': '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-4 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2l-7 7-7-7" /></svg>',
+                'Lifestyle': '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-4 text-sky-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>',
+                'Medical': '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-4 text-red-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>'
+            };
+
+            resultsSection.innerHTML = `
+                <div class="space-y-8">
+                    <div class="glass-card p-6 stagger-in"><h2 class="text-3xl font-bold text-white mb-4">AI Heartbeat Summary</h2><p class="text-gray-400 text-lg leading-relaxed">${data.summary}</p></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                        <div class="lg:col-span-3 space-y-8">
+                            <div class="glass-card p-6 stagger-in" style="animation-delay: 0.1s;">
+                                <h2 class="text-3xl font-bold text-white mb-4 text-center">Health Vitals</h2>
+                                <div class="flex flex-col lg:flex-row items-center justify-center gap-6">
+                                    <div class="w-full lg:w-1/2 h-64"><canvas id="overall-health-chart"></canvas></div>
+                                    <div class="w-full lg:w-1/2 h-64"><canvas id="mental-physical-chart"></canvas></div>
+                                </div>
+                            </div>
+                            <div class="glass-card p-6 stagger-in" style="animation-delay: 0.3s;">
+                                <h2 class="text-3xl font-bold text-white mb-4 text-center">Health Trends Over Time</h2>
+                                <div class="w-full h-72"><canvas id="health-trends-chart"></canvas></div>
+                            </div>
+                            <div class="glass-card p-6 stagger-in" style="animation-delay: 0.5s;">
+                                <h2 class="text-3xl font-bold text-white mb-4">Possible Conditions</h2>
+                                <div class="space-y-4">${data.possibleConditions.map(c => `<div><div class="flex justify-between items-center"><h4 class="font-bold text-lg text-white">${c.name}</h4><span class="px-3 py-1 rounded-full text-sm font-medium ${seriousnessClasses[c.seriousness] || 'bg-gray-700'}">${c.seriousness}</span></div><p class="text-gray-400 text-sm mt-1">${c.description}</p></div>`).join('')}</div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2 space-y-8">
+                             <div class="glass-card p-6 stagger-in" style="animation-delay: 0.2s;">
+                                <h2 class="text-3xl font-bold text-white mb-4">Anatomical Symptom Scan</h2>
+                                <div id="body-map-container" class="relative">
+                                    <img id="body-map-image" src="https://i.pinimg.com/736x/ea/f5/a8/eaf5a8fe6b3e5ea9ad574359e2de0f4f.jpg" alt="Human Skeleton">
+                                    <svg class="label-line-svg"></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6 stagger-in" style="animation-delay: 0.6s;">
+                        <h2 class="text-3xl font-bold text-white mb-6">Your Personalized Action Plan</h2>
+                        <div id="ai-tip" class="text-center bg-violet-900/20 p-6 rounded-lg border-2 border-violet-500/30 mb-6"><h3 class="font-bold text-xl mb-2 text-violet-300">AI-Generated Insight</h3><p class="text-lg italic text-violet-400">"${data.personalizedTip}"</p></div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">${data.remedies.map(r => `<div class="flex items-start bg-black/20 p-4 rounded-lg">${remedyIcons[r.type] || remedyIcons['Lifestyle']}<div><h4 class="font-bold text-lg text-white">${r.name} <span class="text-sm font-medium text-gray-400 ml-2">(${r.type})</span></h4><p class="text-gray-400">${r.details}</p></div></div>`).join('')}</div>
+                    </div>
+                </div>
+            `;
+            
+            renderHealthCharts(data.mentalHealthScore, data.physicalHealthScore);
+            renderHealthTrendsChart(data.mentalHealthScore, data.physicalHealthScore);
+            renderSymptomMap(data.symptoms);
+        }
+
+        function getScoreColor(score) {
+            if (score >= 7) return { start: '#16a34a', end: '#2dd4bf', text: '#5eead4' }; // Green-Teal
+            if (score >= 4) return { start: '#d97706', end: '#fbbf24', text: '#fcd34d' }; // Orange-Yellow
+            return { start: '#dc2626', end: '#ef4444', text: '#fca5a5' }; // Red
+        }
+
+        // --- Chart Rendering Function ---
+        function renderHealthCharts(mental, physical) {
+            const avg = Math.round((mental + physical) / 2);
+
+            const overallColors = getScoreColor(avg);
+            const mentalColors = getScoreColor(mental);
+            const physicalColors = getScoreColor(physical);
+
+            const overallCtx = document.getElementById('overall-health-chart').getContext('2d');
+            if (overallHealthChart) overallHealthChart.destroy();
+            const overallGradient = overallCtx.createRadialGradient(overallCtx.canvas.width / 2, overallCtx.canvas.height / 2, 0, overallCtx.canvas.width / 2, overallCtx.canvas.height / 2, overallCtx.canvas.width / 2);
+            overallGradient.addColorStop(0, overallColors.start);
+            overallGradient.addColorStop(1, overallColors.end);
+            overallHealthChart = new Chart(overallCtx, {
+                type: 'doughnut', data: { datasets: [{ data: [avg, 10 - avg], backgroundColor: [overallGradient, 'rgba(255, 255, 255, 0.1)'], borderColor: 'transparent' }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false }, tooltip: { enabled: false } }, animation: { animateRotate: true, animateScale: true } },
+                plugins: [{
+                    id: 'overall-center-text', afterDraw: (chart) => {
+                        const { ctx, width, height } = chart;
+                        ctx.save();
+                        const fontSize = (height / 114).toFixed(2);
+                        ctx.font = `bold ${fontSize}em Inter`;
+                        ctx.textBaseline = 'middle';
+                        const text = avg;
+                        const textX = Math.round((width - ctx.measureText(text).width) / 2);
+                        const textY = height / 2;
+                        ctx.fillStyle = overallColors.text;
+                        ctx.fillText(text, textX, textY);
+                        ctx.font = `0.5em Inter`;
+                        ctx.fillStyle = '#9ca3af';
+                        ctx.fillText('Overall', textX + ctx.measureText(text).width / 2 - ctx.measureText('Overall').width / 2, textY + 20);
+                        ctx.restore();
+                    }
+                }]
+            });
+
+            const mpCtx = document.getElementById('mental-physical-chart').getContext('2d');
+            if (mentalPhysicalChart) mentalPhysicalChart.destroy();
+            const mentalGradient = mpCtx.createLinearGradient(0, 0, 0, mpCtx.canvas.height);
+            mentalGradient.addColorStop(0, mentalColors.start);
+            mentalGradient.addColorStop(1, mentalColors.end);
+            const physicalGradient = mpCtx.createLinearGradient(0, 0, 0, mpCtx.canvas.height);
+            physicalGradient.addColorStop(0, physicalColors.start);
+            physicalGradient.addColorStop(1, physicalColors.end);
+            mentalPhysicalChart = new Chart(mpCtx, {
+                type: 'bar', data: { labels: ['Mental', 'Physical'], datasets: [{ data: [mental, physical], backgroundColor: [mentalGradient, physicalGradient], borderWidth: 0, borderRadius: 5 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 10, grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#e5e7eb' } }, x: { grid: { display: false }, ticks: { color: '#e5e7eb', font: { size: 14 } } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.label}: ${c.raw}` } } }, animation: { duration: 1000, easing: 'easeOutQuart' } }
+            });
+        }
+
+        // --- Health Trends Chart ---
+        function renderHealthTrendsChart(currentMental, currentPhysical) {
+            const trendCtx = document.getElementById('health-trends-chart').getContext('2d');
+            if (healthTrendsChart) healthTrendsChart.destroy();
+            const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const mentalData = Array.from({length: 6}, () => Math.floor(Math.random() * 4) + 4);
+            const physicalData = Array.from({length: 6}, () => Math.floor(Math.random() * 4) + 3);
+            mentalData.push(currentMental);
+            physicalData.push(currentPhysical);
+
+            healthTrendsChart = new Chart(trendCtx, {
+                type: 'line', data: { labels, datasets: [ { label: 'Mental', data: mentalData, borderColor: '#818cf8', backgroundColor: 'rgba(129, 140, 248, 0.2)', fill: true, tension: 0.4 }, { label: 'Physical', data: physicalData, borderColor: '#f472b6', backgroundColor: 'rgba(244, 114, 182, 0.2)', fill: true, tension: 0.4 } ] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 10, grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#e5e7eb' } }, x: { grid: { display: false }, ticks: { color: '#e5e7eb', font: { size: 14 } } } }, plugins: { legend: { labels: { color: '#e5e7eb' } }, tooltip: { mode: 'index', intersect: false } } }
+            });
+        }
+
+        // --- Anatomy Scan Function ---
+        function renderSymptomMap(symptoms) {
+            const container = document.getElementById('body-map-container');
+            const image = document.getElementById('body-map-image');
+            const svgOverlay = container.querySelector('.label-line-svg');
+            svgOverlay.innerHTML = '';
+            container.querySelectorAll('.symptom-marker, .symptom-label').forEach(el => el.remove());
+            const bodyPartCoordinates = {
+                head:    { x: 0.50, y: 0.10 },
+                chest:   { x: 0.50, y: 0.28 },
+                abdomen: { x: 0.50, y: 0.42 },
+                arms:    { x: 0.28, y: 0.35 },
+                legs:    { x: 0.40, y: 0.70 }
+            };
+            const uniqueLocations = [...new Set(symptoms.map(s => s.location.toLowerCase()))];
+
+            const renderMarkers = () => {
+                const containerRect = container.getBoundingClientRect();
+                if (containerRect.width === 0) return; // Don't render if container isn't visible yet
+                
+                uniqueLocations.forEach(locationKey => {
+                    const coords = bodyPartCoordinates[locationKey];
+                    if (!coords) return;
+                    const addMarkerAndLabel = (x_ratio, y_ratio) => {
+                        const markerX = x_ratio * containerRect.width;
+                        const markerY = y_ratio * containerRect.height;
+                        const marker = document.createElement('div');
+                        marker.className = 'symptom-marker';
+                        marker.style.left = `${markerX}px`;
+                        marker.style.top = `${markerY}px`;
+                        container.appendChild(marker);
+
+                        const label = document.createElement('div');
+                        label.className = 'symptom-label';
+                        label.textContent = symptoms.filter(s => s.location.toLowerCase() === locationKey).map(s => s.name).join(', ');
+                        container.appendChild(label);
+                        let labelX = markerX + 25;
+                        let labelY = markerY - (label.offsetHeight / 2);
+                        if (labelX + label.offsetWidth + 10 > containerRect.width) {
+                            labelX = markerX - label.offsetWidth - 25;
+                        }
+                        if (labelY < 0) labelY = 0;
+                        if (labelY + label.offsetHeight > containerRect.height) labelY = containerRect.height - label.offsetHeight;
+                        label.style.left = `${labelX}px`;
+                        label.style.top = `${labelY}px`;
+                        marker.addEventListener('mouseenter', () => label.classList.add('active'));
+                        marker.addEventListener('mouseleave', () => label.classList.remove('active'));
+                        const line = document.createElementNS("http://www.w3.org/2000/svg", 'path');
+                        const labelAnchorX = (labelX < markerX) ? (labelX + label.offsetWidth) : labelX;
+                        const labelAnchorY = labelY + label.offsetHeight / 2;
+                        line.setAttribute('d', `M ${markerX} ${markerY} L ${labelAnchorX} ${labelAnchorY}`);
+                        line.setAttribute('class', 'label-line');
+                        svgOverlay.appendChild(line);
+                    };
+                    addMarkerAndLabel(coords.x, coords.y);
+                    if (locationKey === 'arms') addMarkerAndLabel(1 - coords.x, coords.y);
+                    if (locationKey === 'legs') addMarkerAndLabel(1 - coords.x, coords.y);
+                });
+            };
+
+            if (image.complete) renderMarkers();
+            else image.onload = renderMarkers;
+            window.addEventListener('resize', () => {
+                container.querySelectorAll('.symptom-marker, .symptom-label, .label-line').forEach(el => el.remove());
+                renderMarkers();
+            });
+        }
+
+        // CORRECTED Dynamic Background Function
+        function updateDynamicColors(mentalScore, physicalHealthScore) {
+            const root = document.documentElement;
+            const getBgColor = (score) => {
+                if (score >= 7) return '#0d9488'; // Teal/Emerald
+                if (score >= 4) return '#b45309'; // Orange/Amber
+                return '#991b1b'; // Red
+            };
+            const startColor = getBgColor(mentalScore);
+            const endColor = getBgColor(physicalHealthScore);
+            
+            root.style.setProperty('--bg-color-start', startColor);
+            root.style.setProperty('--bg-color-end', endColor);
+        }
+
+        function showError(message) {
+            errorMessageContainer.innerHTML = `<div class="glass-card bg-red-900/30 border border-red-500 text-red-300 px-4 py-3 rounded-lg text-center" role="alert"><strong class="font-bold">Error!</strong><span class="block sm:inline ml-2">${message}</span></div>`;
+            errorMessageContainer.classList.remove('hidden');
+        }
+    });
+    </script>
+</body>
+</html>

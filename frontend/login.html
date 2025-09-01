@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AI Health Therapist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-color-start: #0f0c29; --bg-color-end: #000000; --accent-color-1: #4f46e5; --accent-color-2: #d946ef; --text-color: #e6edf3; --card-bg: rgba(1, 2, 17, 0.6); --border-color: rgba(79, 70, 229, 0.4); }
+        body { font-family: 'Inter', sans-serif; color: var(--text-color); }
+        .nebula-background { position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -1; background: linear-gradient(45deg, var(--bg-color-start), var(--bg-color-end)); animation: gradient-pan 20s ease infinite; }
+        @keyframes gradient-pan { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .glass-card { background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid var(--border-color); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); }
+        .btn-primary { background-image: linear-gradient(to right, var(--accent-color-1) 0%, var(--accent-color-2) 51%, var(--accent-color-1) 100%); background-size: 200% auto; color: white; transition: all 0.5s; }
+        .btn-primary:hover { background-position: right center; transform: translateY(-2px); }
+        .title-gradient { background: linear-gradient(45deg, #a5b4fc, #f472b6, #67e8f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="nebula-background"></div>
+    <div class="w-full max-w-md">
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-extrabold title-gradient tracking-tight">AI Health Therapist</h1>
+            <p class="mt-2 text-gray-400">Sign in or create an account to begin.</p>
+        </header>
+
+        <div class="glass-card p-8">
+            <form id="login-form">
+                <h2 class="text-2xl font-bold text-center mb-6">Sign In</h2>
+                <div class="mb-4">
+                    <label for="login-username" class="block text-gray-300 mb-2">Username</label>
+                    <input type="text" id="login-username" name="username" class="w-full p-3 rounded-lg bg-black/50 border-2 border-gray-700 focus:border-pink-500 focus:ring-0" required>
+                </div>
+                <div class="mb-6">
+                    <label for="login-password" class="block text-gray-300 mb-2">Password</label>
+                    <input type="password" id="login-password" name="password" class="w-full p-3 rounded-lg bg-black/50 border-2 border-gray-700 focus:border-pink-500 focus:ring-0" required>
+                </div>
+                <button type="submit" class="btn-primary w-full font-bold py-3 rounded-lg text-lg">Sign In</button>
+                <p class="text-center mt-4 text-gray-400">No account? <a href="#" id="show-signup" class="font-medium text-pink-400 hover:underline">Sign up</a></p>
+            </form>
+            
+            <form id="signup-form" class="hidden">
+                 <h2 class="text-2xl font-bold text-center mb-6">Create Account</h2>
+                <div class="mb-4">
+                    <label for="signup-username" class="block text-gray-300 mb-2">Username</label>
+                    <input type="text" id="signup-username" name="username" class="w-full p-3 rounded-lg bg-black/50 border-2 border-gray-700 focus:border-pink-500 focus:ring-0" required>
+                </div>
+                <div class="mb-6">
+                    <label for="signup-password" class="block text-gray-300 mb-2">Password</label>
+                    <input type="password" id="signup-password" name="password" class="w-full p-3 rounded-lg bg-black/50 border-2 border-gray-700 focus:border-pink-500 focus:ring-0" required>
+                </div>
+                <button type="submit" class="btn-primary w-full font-bold py-3 rounded-lg text-lg">Sign Up</button>
+                 <p class="text-center mt-4 text-gray-400">Have an account? <a href="#" id="show-login" class="font-medium text-pink-400 hover:underline">Sign in</a></p>
+            </form>
+
+            <div id="auth-error" class="mt-4 text-center text-red-400 hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const showSignup = document.getElementById('show-signup');
+        const showLogin = document.getElementById('show-login');
+        const authError = document.getElementById('auth-error');
+
+        showSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.classList.add('hidden');
+            signupForm.classList.remove('hidden');
+            authError.classList.add('hidden');
+        });
+        showLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            signupForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            authError.classList.add('hidden');
+        });
+
+// Replace this function in login.html
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(loginForm);
+        const data = Object.fromEntries(formData.entries());
+    
+        try {
+            const response = await fetch('/auth/signin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+
+        if (response.ok) {
+            // Server tells us where to go!
+            window.location.href = result.redirectUrl; 
+        } else {
+            authError.textContent = result.message;
+            authError.classList.remove('hidden');
+        }
+        } catch (error) {
+            authError.textContent = 'Could not connect to the server.';
+            authError.classList.remove('hidden');
+        }
+    });
+
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(signupForm);
+            const data = Object.fromEntries(formData.entries());
+            
+            const response = await fetch('/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            authError.textContent = result.message;
+            authError.classList.remove('hidden');
+
+            if (response.ok) {
+                authError.style.color = 'lightgreen';
+                signupForm.reset();
+                setTimeout(() => showLogin.click(), 2000);
+            } else {
+                 authError.style.color = '#f87171';
+            }
+        });
+    </script>
+</body>
+</html>

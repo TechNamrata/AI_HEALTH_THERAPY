@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - AI Health Therapist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color-start: #0f0c29; --bg-color-end: #000000; --accent-color-1: #4f46e5; --accent-color-2: #d946ef; --text-color: #e6edf3; --card-bg: rgba(1, 2, 17, 0.6); --border-color: rgba(79, 70, 229, 0.4);
+        }
+        body { font-family: 'Inter', sans-serif; color: var(--text-color); background-color: var(--bg-color-end); overflow-y: auto; }
+        .nebula-background { position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -1; background: linear-gradient(45deg, var(--bg-color-start), var(--bg-color-end)); background-size: 200% 200%; animation: gradient-pan 20s ease infinite; }
+        #particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        @keyframes gradient-pan { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .title-gradient { background: linear-gradient(45deg, #a5b4fc, #f472b6, #67e8f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .btn-primary { background-image: linear-gradient(to right, var(--accent-color-1) 0%, var(--accent-color-2) 51%, var(--accent-color-1) 100%); background-size: 200% auto; color: white; transition: all 0.5s; box-shadow: 0 5px 20px rgba(217, 70, 239, 0.4); }
+        .btn-primary:hover { background-position: right center; box-shadow: 0 10px 30px rgba(217, 70, 239, 0.6); transform: translateY(-2px) scale(1.05); }
+        .fade-in-up { opacity: 0; transform: translateY(30px); animation: fadeInUp 0.8s 0.2s ease-out forwards; }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        .delay-200 { animation-delay: 0.4s; } .delay-400 { animation-delay: 0.6s; } .delay-600 { animation-delay: 0.8s; } .delay-800 { animation-delay: 1s; }
+        .glass-card { background: var(--card-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid var(--border-color); transition: all 0.3s ease; }
+        .glass-card:hover { transform: translateY(-5px) scale(1.02); border-color: rgba(217, 70, 239, 0.6); }
+        #bio-scanner { transform-style: preserve-3d; animation: rotate3D 30s linear infinite; }
+        #bio-scanner .ring { stroke: url(#ring-gradient); stroke-width: 1.5; fill: none; stroke-dasharray: 500; animation: dash 5s ease-in-out infinite alternate; }
+        #bio-scanner .core { fill: url(#core-gradient); animation: pulse-core 3s ease-in-out infinite; }
+        #bio-scanner .ring-1 { animation-duration: 4s; }
+        #bio-scanner .ring-2 { animation-duration: 6s; animation-direction: reverse; }
+        @keyframes rotate3D { from { transform: rotateY(0deg) rotateX(10deg); } to { transform: rotateY(360deg) rotateX(10deg); } }
+        @keyframes dash { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
+        @keyframes pulse-core { 0%, 100% { transform: scale(0.9); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="nebula-background"></div>
+    <canvas id="particle-canvas"></canvas>
+
+    <div class="relative z-10 flex flex-col items-center justify-center w-full max-w-5xl mx-auto p-4">
+        
+        <div class="mb-8 fade-in-up">
+            <svg id="bio-scanner" width="200" height="200" viewBox="0 0 200 200">
+                <defs>
+                    <linearGradient id="ring-gradient" gradientTransform="rotate(45)"><stop offset="0%" stop-color="#4f46e5" /><stop offset="100%" stop-color="#d946ef" /></linearGradient>
+                    <radialGradient id="core-gradient"><stop offset="0%" stop-color="#a5b4fc" /><stop offset="100%" stop-color="#4f46e5" /></radialGradient>
+                </defs>
+                <circle class="core" cx="100" cy="100" r="30" />
+                <ellipse class="ring ring-1" cx="100" cy="100" rx="60" ry="60" />
+                <ellipse class="ring ring-2" cx="100" cy="100" rx="80" ry="40" transform="rotate(45 100 100)" />
+            </svg>
+        </div>
+
+        <h1 class="text-5xl md:text-6xl font-extrabold title-gradient tracking-tight text-center fade-in-up delay-200">
+            Welcome Back, <span id="username" class="whitespace-nowrap">User</span>
+        </h1>
+        <p class="mt-4 text-lg text-gray-400 max-w-2xl mx-auto text-center fade-in-up delay-400">
+            Your personal AI is ready to begin the bio-assessment.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 w-full">
+            <div class="glass-card p-6 text-center fade-in-up delay-600">
+                <div class="flex justify-center mb-4"><svg class="w-12 h-12 text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg></div>
+                <h3 class="text-xl font-bold text-white">Instant Analysis</h3>
+                <p class="text-gray-400 mt-2">Get immediate insights based on your health concerns.</p>
+            </div>
+            <div class="glass-card p-6 text-center fade-in-up delay-800">
+                <div class="flex justify-center mb-4"><svg class="w-12 h-12 text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg></div>
+                <h3 class="text-xl font-bold text-white">Personalized Plan</h3>
+                <p class="text-gray-400 mt-2">Receive an actionable plan tailored just for you.</p>
+            </div>
+            <div class="glass-card p-6 text-center fade-in-up delay-600">
+                <div class="flex justify-center mb-4"><svg class="w-12 h-12 text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg></div>
+                <h3 class="text-xl font-bold text-white">Secure & Private</h3>
+                <p class="text-gray-400 mt-2">Your data is always encrypted and confidential.</p>
+            </div>
+        </div>
+
+        <div class="mt-12 fade-in-up delay-800">
+            <a href="/app" class="btn-primary font-bold py-4 px-12 rounded-full text-xl">
+                Begin Bio-Assessment
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/user');
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('username').textContent = data.username;
+                }
+            } catch (error) {
+                console.error("Could not fetch username:", error);
+            }
+        });
+        
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray;
+        class Particle {
+            constructor(x, y, directionX, directionY, size, color) { this.x = x; this.y = y; this.directionX = directionX; this.directionY = directionY; this.size = size; this.color = color; }
+            draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false); ctx.fillStyle = this.color; ctx.fill(); }
+            update() { if (this.x > canvas.width || this.x < 0) { this.directionX = -this.directionX; } if (this.y > canvas.height || this.y < 0) { this.directionY = -this.directionY; } this.x += this.directionX; this.y += this.directionY; this.draw(); }
+        }
+        function init() {
+            particlesArray = [];
+            let numberOfParticles = (canvas.height * canvas.width) / 9000;
+            for (let i = 0; i < numberOfParticles; i++) {
+                let size = (Math.random() * 2) + 1;
+                let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+                let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+                let directionX = (Math.random() * .4) - .2;
+                let directionY = (Math.random() * .4) - .2;
+                particlesArray.push(new Particle(x, y, directionX, directionY, size, 'rgba(177, 161, 255, 0.5)'));
+            }
+        }
+        function animate() { requestAnimationFrame(animate); ctx.clearRect(0,0,innerWidth, innerHeight); for (let i = 0; i < particlesArray.length; i++) { particlesArray[i].update(); } }
+        init();
+        animate();
+        window.addEventListener('resize', () => { canvas.width = innerWidth; canvas.height = innerHeight; init(); });
+    </script>
+</body>
+</html>
