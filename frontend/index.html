@@ -84,13 +84,16 @@
         });
 
         // Replace this function in index.html
+// In frontend/index.html
+
 async function callGeminiAPI(problem) {
     const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ problem: problem })
+        body: JSON.stringify({ problem: problem }),
+        credentials: 'include' // <-- ADD THIS LINE
     });
 
     if (!response.ok) {
@@ -98,7 +101,7 @@ async function callGeminiAPI(problem) {
         throw new Error(errorResult.message || `API Error: ${response.status}`);
     }
 
-    return await response.json(); // The backend now returns the parsed JSON directly
+    return await response.json();
 }
 
         function updateUI(data) {
