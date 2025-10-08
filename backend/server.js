@@ -28,9 +28,23 @@ app.use('/auth', require('./routes/authRoutes'));
 app.use('/api', require('./routes/userRoutes'));
 app.use('/api', require('./routes/apiRoutes'));
 
+
 // --- Page Serving Routes ---
 
-// Serve static files from the frontend folder
+// **FIXED**: The root route is now placed BEFORE the static middleware.
+// This is the most important route and must be checked first for all new visitors.
+app.get('/', (req, res) => {
+    if (req.cookies.token) {
+        // If they have a valid login cookie, send them to the landing page
+        res.redirect('/landing');
+    } else {
+        // If they DON'T have a cookie, force them to the login page
+        res.redirect('/login');
+    }
+});
+
+// Serve static files from the frontend folder (for CSS, images, etc.)
+// Because the '/' route is handled above, this will no longer interfere with the login redirect.
 app.use(express.static(frontendDirectoryPath));
 
 // Auth pages (unprotected)
@@ -51,17 +65,9 @@ app.get('/onboarding', protect, (req, res) => {
     res.sendFile(path.join(frontendDirectoryPath, 'onboarding.html'));
 });
 
+// This is the route for your main application page, which is index.html
 app.get('/app', protect, (req, res) => {
     res.sendFile(path.join(frontendDirectoryPath, 'index.html'));
-});
-
-// Root route - redirect based on auth
-app.get('/', (req, res) => {
-    if (req.cookies.token) {
-        res.redirect('/landing');
-    } else {
-        res.redirect('/login');
-    }
 });
 
 

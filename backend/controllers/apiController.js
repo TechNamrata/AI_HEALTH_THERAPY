@@ -14,7 +14,7 @@ exports.analyzeHealth = async (req, res) => {
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const systemPrompt = `You are an elite AI Health Therapist. Analyze the user's problem based on their input and their health profile.
         USER HEALTH PROFILE:
