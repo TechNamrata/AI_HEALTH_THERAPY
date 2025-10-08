@@ -21,6 +21,10 @@ const limiter = rateLimit({
 });
 
 app.use('/api', limiter); 
+// In server.js or your routes file
+app.get('/health', (req, res) => {
+  res.status(200).send('OK'); // This just sends a simple "OK" response
+});
 // Middleware
 app.use(cors()); // Enable Cross-Origin Resource Sharing
 app.use(express.json()); // Body parser for JSON
