@@ -1,4 +1,5 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const path = require('path');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
@@ -13,7 +14,13 @@ dotenv.config();
 connectDB();
 
 const app = express();
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: 'Too many requests from this IP, please try again after a minute',
+});
 
+app.use('/api', limiter); 
 // Middleware
 app.use(cors()); // Enable Cross-Origin Resource Sharing
 app.use(express.json()); // Body parser for JSON
