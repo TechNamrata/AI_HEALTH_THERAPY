@@ -25,13 +25,7 @@ AI Health Therapist is a cutting-edge personal health analysis tool. It addresse
 
 This project demonstrates a full development lifecycle, from user authentication and data collection to secure, real-time AI integration and final deployment on a cloud platform.
 
-### ✨ Project in Action
 
-https://github.com/DristiLaskar/AI-Health-Therapist/assets/10100100/your-gif-filename.gif
-
-*(Replace the link above with the GIF you create!)*
-
----
 
 ## 🚀 Key Features
 
@@ -109,3 +103,4 @@ This project was a collaborative effort.
 * **Namrata Nayak**: [GitHub Profile](https://github.com/NamrataNayak) | [LinkedIn](https://www.linkedin.com/in/her-username/)
 
 *(Note: Remember to update the LinkedIn profile links!)*
+
