@@ -66,7 +66,7 @@ To get a local copy up and running, follow these simple steps.
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/DristiLaskar/AI-Health-Therapist.git](https://github.com/DristiLaskar/AI-Health-Therapist.git)
+    git clone [[https://github.com/DristiLaskar/AI-Health-Therapist.git](https://github.com/DristiLaskar/AI-Health-Therapist.git](https://github.com/TechNamrata/AI_HEALTH_THERAPY.git))
     ```
 
 2.  **Navigate to the backend directory:**
@@ -103,4 +103,5 @@ This project was a collaborative effort.
 * **Namrata Nayak**: [GitHub Profile](https://github.com/NamrataNayak) | [LinkedIn](https://www.linkedin.com/in/her-username/)
 
 *(Note: Remember to update the LinkedIn profile links!)*
+
 
