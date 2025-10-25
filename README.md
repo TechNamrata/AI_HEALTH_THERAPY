@@ -25,7 +25,35 @@ AI Health Therapist is a cutting-edge personal health analysis tool. It addresse
 
 This project demonstrates a full development lifecycle, from user authentication and data collection to secure, real-time AI integration and final deployment on a cloud platform.
 
+---
 
+## ✨ Project Preview
+
+A visual walkthrough of the user's journey, from creation to analysis.
+
+### 1. Secure Authentication & Onboarding
+Users create a secure account and build a personalized health profile through a simple, multi-step process.
+<p align="center">
+  <img src="01-login.png" width="24%">
+  <img src="02-gender.png" width="24%">
+  <img src="03-biometrics.png" width="24%">
+  <img src="04-bmi.png" width="24%">
+</p>
+
+### 2. Personalized Dashboard
+After setup, the user is greeted by a personal dashboard, ready to begin their AI-powered bio-assessment.
+<p align="center">
+  <img src="05-dashboard.png" width="70%">
+</p>
+
+### 3. AI-Generated Health Report
+The AI provides a comprehensive "Heartbeat Summary," including health vitals, trends, potential conditions, and a personalized, actionable plan.
+<p align="center">
+  <img src="06-report-top.png" width="70%">
+  <img src="07-report-bottom.png" width="70%">
+</p>
+
+---
 
 ## 🚀 Key Features
 
@@ -66,12 +94,12 @@ To get a local copy up and running, follow these simple steps.
 
 1.  **Clone the repository:**
     ```bash
-    git clone [[https://github.com/DristiLaskar/AI-Health-Therapist.git](https://github.com/DristiLaskar/AI-Health-Therapist.git](https://github.com/TechNamrata/AI_HEALTH_THERAPY.git))
+    git clone [https://github.com/TechNamrata/AI_HEALTH_THERAPY.git](https://github.com/TechNamrata/AI_HEALTH_THERAPY.git)
     ```
 
 2.  **Navigate to the backend directory:**
     ```bash
-    cd AI-Health-Therapist/backend
+    cd AI_HEALTH_THERAPY/backend
     ```
 
 3.  **Install NPM packages:**
@@ -99,9 +127,31 @@ To get a local copy up and running, follow these simple steps.
 
 This project was a collaborative effort.
 
-* **Dristi Laskar**: [GitHub Profile](https://github.com/DristiLaskar) | [LinkedIn](https://www.linkedin.com/in/your-username/)
-* **Namrata Nayak**: [GitHub Profile](https://github.com/NamrataNayak) | [LinkedIn](https://www.linkedin.com/in/her-username/)
-
-*(Note: Remember to update the LinkedIn profile links!)*
-
-
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/TechNamrata">
+        <b>Namrata Nayak</b>
+      </a>
+      <br />
+      <a href="https://github.com/TechNamrata">
+        <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github" />
+      </a>
+      <a href="https://www.linkedin.com/in/namrata-nayak-43b09b2ab/">
+        <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin" />
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/DristiLaskar">
+        <b>Dristi Laskar</b>
+      </a>
+      <br />
+      <a href="https://github.com/DristiLaskar">
+        <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github" />
+      </a>
+      <a href="https://www.linkedin.com/in/dristi-laskar-7ab41728a/">
+        <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin" />
+      </a>
+    </td>
+  </tr>
+</table>
